@@ -1,0 +1,34 @@
+name: Deploy with security policies
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Set up Istioctl
+        run: |
+          curl -L https://istio.io/downloadIstio | sh -
+          export PATH=$PWD/istio-*/bin:$PATH
+          echo "PATH=$PATH" >> $GITHUB_ENV
+
+      - name: Validate Istio manifests
+        run: |
+          istioctl analyze manifests/*.yaml
+
+      - name: Apply security policies
+        run: |
+          kubectl apply -f security-policies/mtls-policy.yaml
+          kubectl apply -f security-policies/authorization-policy.yaml
+          kubectl apply -f security-policies/rate-limit.yaml
+
+      - name: Deploy application
+        run: |
+          kubectl apply -f manifests/

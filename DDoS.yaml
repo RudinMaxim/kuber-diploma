@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit
+  namespace: istio-system
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.local_ratelimit
+          typed_config:
+            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+            type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+            value:
+              filter_enabled:
+                default_value:
+                  numerator: 100
+                  denominator: HUNDRED
+              filter_enforced:
+                default_value:
+                  numerator: 100
+                  denominator: HUNDRED
+              token_bucket:
+                max_tokens: 100
+                tokens_per_fill: 50
+                fill_interval: 1s
+              status_on_error:
+                code: InternalServerError

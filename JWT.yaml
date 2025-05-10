@@ -1,0 +1,10 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: jwt-auth
+  namespace: istio-system
+spec:
+  jwtRules:
+    - issuer: "https://company-auth.example.com"
+      jwksUri: "https://company-auth.example.com/.well-known/jwks.json"
+      forwardOriginalToken: true

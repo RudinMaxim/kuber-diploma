@@ -1,0 +1,18 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: security-metrics
+  namespace: istio-system
+spec:
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - match:
+            metric: REQUEST_COUNT
+            mode: CLIENT_AND_SERVER
+          disabled: false
+        - match:
+            metric: SECURITY_POLICY_VIOLATION
+            mode: SERVER
+          disabled: false

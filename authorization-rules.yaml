@@ -1,0 +1,22 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: db-policy
+  namespace: production
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/backend/sa/backend-service"]
+      to:
+        - operation:
+            ports: ["5432"]
+    - from:
+        - source:
+            principals: ["cluster.local/ns/admin/sa/admin-service"]
+      to:
+        - operation:
+            ports: ["5432"]

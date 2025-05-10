@@ -1,0 +1,6 @@
+- rule: Run shell in container
+  desc: Обнаружен запуск шелла в контейнере.
+  condition: >
+    container.id != host and proc.name = "sh"
+  output: "Запущен шелл в контейнере (user=%user.name container=%container.id)"
+  priority: WARNING

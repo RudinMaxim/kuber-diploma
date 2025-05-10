@@ -1,0 +1,34 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPrivilegedContainer
+metadata:
+  name: no-privileged-containers
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequireNonRoot
+metadata:
+  name: require-non-root
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sTrustedRepos
+metadata:
+  name: trusted-image-repos
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+  parameters:
+    repos:
+      - "harbor.company.com/"
+      - "gcr.io/project/"
+      - "docker.io/company/"
