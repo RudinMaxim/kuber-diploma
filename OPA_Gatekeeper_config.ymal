@@ -1,0 +1,41 @@
+# ConstraintTemplate: Запрет запуска контейнеров от root
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8snonrootuser
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sNonRootUser
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            runAsUser:
+              type: integer
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8snonrootuser
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          container.securityContext.runAsUser == 0
+          msg := sprintf("Container %v is running as root, which is not allowed", [container.name])
+        }
+
+---
+# Constraint: Применение политики ко всем подам
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sNonRootUser
+metadata:
+  name: non-root-containers
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces:
+      - default
+  parameters:
+    runAsUser: 0
