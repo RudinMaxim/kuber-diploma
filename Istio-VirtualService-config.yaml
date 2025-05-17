@@ -1,0 +1,39 @@
+# VirtualService: Настройка маршрутизации с mTLS
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: backend-service
+  namespace: default
+spec:
+  hosts:
+  - backend.default.svc.cluster.local
+  http:
+  - route:
+    - destination:
+        host: backend.default.svc.cluster.local
+        subset: v1
+      weight: 100
+    match:
+    - headers:
+        user-agent:
+          prefix: "Mozilla"
+    retries:
+      attempts: 3
+      perTryTimeout: 2s
+
+---
+# DestinationRule: Включение mTLS для сервиса
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: backend-mtls
+  namespace: default
+spec:
+  host: backend.default.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: MUTUAL
+  subsets:
+  - name: v1
+    labels:
+      version: v1
